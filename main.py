@@ -15,7 +15,7 @@ async def ask(query: str):
 async def upload_pdf(file: UploadFile = File(...)):
     # TODO : Add PDF ingestion to FAISS/Chroma
     return {"filename": file.filename, "status": "PDF uploaded successfully"}
-
+    
 @app.get("/logs")
 async def get_logs():
     # TODO return saved logs from logs/trace.json
