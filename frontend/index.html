@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multi-Agent System</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Multi-Agent System Demo</h1>
+
+    <!-- Query box -->
+    <div class="query-box">
+      <input type="text" id="queryInput" placeholder="Ask me something..." />
+      <button onclick="sendQuery()">Ask</button>
+    </div>
+
+    <!-- PDF upload -->
+    <div class="upload-box">
+      <input type="file" id="pdfUpload" />
+      <button onclick="uploadPDF()">Upload PDF</button>
+    </div>
+
+    <!-- Results -->
+    <div class="results">
+      <h3>Response:</h3>
+      <p id="responseOutput"></p>
+    </div>
+
+    <!-- Logs -->
+    <div class="logs">
+      <h3>Logs:</h3>
+      <pre id="logsOutput"></pre>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
