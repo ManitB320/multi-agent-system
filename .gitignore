@@ -1,2 +1,14 @@
 __pycache__/
 *.pyc
+
+# Ignore FAISS index and pickles
+pdf_store/*
+!pdf_store/.gitkeep
+
+# Ignore user-uploaded PDFs
+pdf/*
+!pdf/.gitkeep
+
+# Ignore runtime logs
+logs/*
+!logs/.gitkeep

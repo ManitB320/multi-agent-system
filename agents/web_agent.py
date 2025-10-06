@@ -1,5 +1,8 @@
-# Web Agent - retrieves results from web search
-# MVP: return dummy response
+from duckduckgo_search import DDGS
 
 def handle_web_query(query: str):
-    return "Placeholder response: would return top 3 results from web."
+
+    with DDGS() as ddgs:
+        results = list(ddgs.text(query, max_results = 3))
+    summaries = [r["body"] for r in results]
+    return " | ".join(summaries)
