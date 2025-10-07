@@ -37,5 +37,5 @@ RUN chmod -R 777 /app/logs
 # Expose the port (Render will use this)
 EXPOSE 8000
 
-# Command to run the application using uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the application using uvicorn, reading the port from Render's environment
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${PORT:-8000}"]

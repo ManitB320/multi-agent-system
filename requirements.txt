@@ -4,7 +4,7 @@ uvicorn[standard]
 python-dotenv
 
 # Google Gemini SDK
-google-genai
+google-genai==0.16.0
 
 # RAG and PDF Processing
 PyMuPDF==1.24.5  # (fitz is PyMuPDF)
@@ -12,10 +12,10 @@ numpy
 faiss-cpu # Lightweight CPU version for vector store
 sentence-transformers
 langchain-text-splitters # Used for RecursiveCharacterTextSplitter
-duckduckgo-search # Still needed for web_agent.py
+duckduckgo-search # Needed for web_agent.py
 
 # Specialized Agents
-arxiv # New requirement for the Arxiv agent
+arxiv #The Arxiv agent
 
 # PDF Generation (for generate_pdfs.py)
 reportlab
