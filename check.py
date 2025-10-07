@@ -1,3 +1,5 @@
+# This file checks if gemini is running on your system successfully or not. (OPTIONAL)
+
 import os
 from dotenv import load_dotenv
 
@@ -20,4 +22,4 @@ genai.configure(api_key=api_key)
 # Test Gemini
 model = genai.GenerativeModel("gemini-2.5-flash")
 response = model.generate_content("Hello Gemini! This is a test.")
-print("\n✅ Response from Gemini:\n", response.text)
+print("\nResponse from Gemini:\n", response.text)

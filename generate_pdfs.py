@@ -137,6 +137,5 @@ for filename, text in docs.items():
     c.save()
 
 print("\n----------------------------------------------------------------------")
-print("✅ 5 NebulaByte sample PDFs generated successfully in 'sample_pdfs/' folder.")
-print("Complex formatting (tables/symbols) has been removed for clean rendering.")
+print(" 5 NebulaByte sample PDFs generated successfully in 'sample_pdfs/' folder.")
 print("----------------------------------------------------------------------\n")
