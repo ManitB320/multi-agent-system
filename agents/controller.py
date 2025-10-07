@@ -1,7 +1,7 @@
 import os, json, datetime
 from dotenv import load_dotenv
-from google import generativeai as genai
-from google.generativeai import types
+from google import genai
+from google.genai import types
 from agents import pdf_agent, web_agent, arxiv_agent
 import re
 
