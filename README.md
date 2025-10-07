@@ -70,10 +70,17 @@ To restore the dynamic LLM routing (i.e., routing to `Web_Search` or `Arxiv_Sear
 
 # Some Demo/Test Images:
 
-pdf_agent in action (Successful PDF upload and query related to the said PDF):
+PDF-Agent in Action (Successful PDF upload, query asked related to the PDF along with response & logs):
 
 ![PDF-Agent System Demo Screenshot](assets/pdfdemo1.png)
 ![PDF-Agent System Demo Screenshot](assets/pdfdemo2.png)
 
+Web-Agent in Action (Query about Prime Minister of Nepal along with response and logs):
+
+![Web-Agent System Demo Screenshot](assets/webdemo1.png)
+
+Arxiv-Agent in Action (Query about summarizing recent research done in astrophysics along with response and logs):
+
+![Arxiv-Agent System Demo Screenshot](assets/arxivdemo1.png)
 
 ### NOTE: This project was specifically built for Solar Industries India Ltd. Internship assessment.
