@@ -2,7 +2,7 @@ import fitz # PyMuPDF
 import numpy as np
 import os, pickle
 from dotenv import load_dotenv
-from google import genai
+import google.generativeai as genai
 
 # --- New Import for Advanced Chunking ---
 from langchain_text_splitters import RecursiveCharacterTextSplitter 
