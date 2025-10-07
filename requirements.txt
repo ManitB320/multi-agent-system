@@ -19,3 +19,5 @@ arxiv #The Arxiv agent
 
 # PDF Generation (for generate_pdfs.py)
 reportlab
+
+protobuf>=4.25.3
