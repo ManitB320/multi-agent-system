@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+google-generativeai
+python-dotenv
+faiss-cpu
+langchain
+requests
+beautifulsoup4
+PyMuPDF

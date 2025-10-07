@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import agents.controller as controller
 import uvicorn
 import json, os 
+from dotenv import load_dotenv
+
+load_dotenv()
+api_key = os.getenv("GOOGLE_API_KEY")
 
 app = FastAPI(title = "multi-agent-system")
 
@@ -17,7 +21,7 @@ app.add_middleware(
 
 @app.post("/ask")
 async def ask(query: str):
-    response, logs = controller.route_query(query)
+    response, logs = await controller.route_query(query)
 
     return {"query": query, "response": response, "logs": logs}
 

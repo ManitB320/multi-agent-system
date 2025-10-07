@@ -12,3 +12,6 @@ pdf/*
 # Ignore runtime logs
 logs/*
 !logs/.gitkeep
+
+# Ignore secrets
+*.env

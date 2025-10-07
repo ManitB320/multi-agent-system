@@ -31,3 +31,16 @@ h1 {
   padding: 10px;
   border-radius: 8px;
 }
+
+#logsOutput {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 8px;
+  font-family: monospace;
+  white-space: pre-wrap; /* wrap long lines */
+  word-wrap: break-word;
+  max-height: 400px; /* limit vertical growth */
+  overflow-y: auto;  /* scroll if too long */
+  overflow-x: hidden; /* no horizontal scrolling */
+}
+
