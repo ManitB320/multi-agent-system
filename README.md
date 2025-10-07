@@ -1,8 +1,8 @@
-# 🤖 Multi-Agent Retrieval-Augmented Generation (RAG) System
+# Multi-Agent Retrieval-Augmented Generation (RAG) System
 
 This project is a multi-agent orchestration framework built on **FastAPI** and the **Gemini API**. It features an intelligent **Controller Agent** that dynamically routes user queries to specialized agents, including a citation-aware PDF RAG system, a Web Search agent, and an Arxiv Search agent.
 
-## ✨ Features
+## Features
 
 - **LLM-Powered Routing:** A Controller Agent (using Gemini) decides which specialized agents (`PDF_RAG`, `Web_Search`, `Arxiv_Search`) to activate based on the query's intent.
 - **Advanced PDF RAG:** Uses `PyMuPDF`, `sentence-transformers`, `langchain-text-splitters`, and `FAISS` for robust, chunked, and metadata-rich internal knowledge retrieval.
@@ -54,7 +54,7 @@ uvicorn main:app --reload
 
 1. Open the Frontend: Navigate to frontend/index.html in your web browser.
 
-2. Ingest PDFs: Before querying, use the "Upload PDF" button to ingest the sample documents from the sample_pdfs/ folder. This builds   the internal FAISS vector store.
+2. Ingest PDFs: Before querying, use the "Upload PDF" button to ingest the sample documents (or your own pdf that includes text) from the sample_pdfs/ folder. This builds the internal FAISS vector store.
 
 3. Ask a Query: Enter a question in the "Ask me something..." box. The system will automatically route the query to the correct agent(s).
 
