@@ -1,66 +1,164 @@
 import fitz # PyMuPDF
-from sentence_transformers import SentenceTransformer
-import faiss
 import numpy as np
 import os, pickle
 from dotenv import load_dotenv
 from google import generativeai as genai 
 
-# --- LLM Generative Model (For synthesis) ---
+# --- New Import for Advanced Chunking ---
+from langchain_text_splitters import RecursiveCharacterTextSplitter 
+
+# --- Configuration & Models ---
 load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-MODEL_NAME = "gemini-2.5-flash"
-SYNTHESIS_MODEL = genai.GenerativeModel(MODEL_NAME) #Renamed for synthesis
 
-# --- Embedding Model (For retrieval) ---
-EMBEDDING_MODEL = SentenceTransformer('all-MiniLM-L6-v2') #Renamed for embedding
+# LLM Generative Model (For synthesis)
+MODEL_NAME = "gemini-2.5-flash"
+SYNTHESIS_MODEL = genai.GenerativeModel(MODEL_NAME) 
+
+# Embedding Model (For retrieval)
+from sentence_transformers import SentenceTransformer
+EMBEDDING_MODEL = SentenceTransformer('all-MiniLM-L6-v2') 
+
+# Vector Store/DB parameters
+import faiss
 DB_PATH = "pdf_store"
 
-def process_pdf(file_path):
-    """Extracts all text from the PDF."""
-    doc = fitz.open(file_path)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return text
+# --- RAG/Chunking Parameters ---
+CHUNK_SIZE = 1000 
+CHUNK_OVERLAP = 200 
+SPLITTER_SEPARATORS = ["\n\n", "\n", " ", ""]
 
-def embed_text(text):
-    """Chunks text and generates embeddings."""
-    chunks = [text[i:i+500] for i in range(0, len(text), 500)]
-    # USE EMBEDDING_MODEL
-    embeddings = EMBEDDING_MODEL.encode(chunks) 
-    return chunks, np.array(embeddings)
 
-def build_faiss_index(chunks, embeddings):
-    """Builds and saves the FAISS index and text chunks."""
-    os.makedirs(DB_PATH, exist_ok = True)
+# ---------- Ingestion Pipeline (The New Logic) ----------
+
+def ingest_pdf(file_path: str):
+    """
+    Handles the entire PDF ingestion pipeline:
+    1. Extracts text page-by-page, with metadata.
+    2. Chunks the text using recursive splitting.
+    3. Embeds all chunks.
+    4. Builds and saves the FAISS index and the associated data/metadata.
+    """
+    
+    # 1. Process and Chunk
+    print(f"Starting ingestion for {file_path}...")
+    chunk_data_list = _process_pdf_and_chunk(file_path)
+    if not chunk_data_list:
+        print("Ingestion failed or no text found.")
+        return
+        
+    # 2. Separate Data for Embedding and Saving
+    chunks = [d["text"] for d in chunk_data_list]
+    metadata = [d["metadata"] for d in chunk_data_list]
+
+    # 3. Generate Embeddings
+    print(f"Generating embeddings for {len(chunks)} chunks...")
+    embeddings = EMBEDDING_MODEL.encode(chunks)
+    
+    # 4. Build and Save FAISS Index and Data
+    _build_and_save_index(chunks, metadata, embeddings)
+    print(f"Ingestion complete. Index saved to {DB_PATH}.")
+
+
+def _process_pdf_and_chunk(file_path: str):
+    """Internal function to handle PDF parsing and advanced chunking with metadata."""
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
+        separators=SPLITTER_SEPARATORS,
+        length_function=len
+    )
+    
+    final_chunks_data = []
+    
+    try:
+        doc = fitz.open(file_path)
+    except Exception as e:
+        print(f"Error opening PDF: {e}")
+        return []
+
+    file_name = os.path.basename(file_path)
+    
+    for page_num, page in enumerate(doc):
+        page_text = page.get_text()
+        chunks = splitter.split_text(page_text)
+        
+        # Attach Metadata to each chunk
+        for i, chunk in enumerate(chunks):
+            chunk_data = {
+                "text": chunk,
+                "metadata": {
+                    "source": file_name,
+                    "page_number": page_num + 1,
+                    "chunk_id": f"{file_name}_{page_num+1}_{i}",
+                }
+            }
+            final_chunks_data.append(chunk_data)
+            
+    return final_chunks_data
+
+
+def _build_and_save_index(chunks: list, metadata: list, embeddings: np.ndarray):
+    """Internal function to build FAISS index and save the chunks + metadata."""
+    
+    os.makedirs(DB_PATH, exist_ok=True)
+    
+    # Save the index
     dim = embeddings.shape[1]
     index = faiss.IndexFlatL2(dim)
     index.add(embeddings)
     faiss.write_index(index, f"{DB_PATH}/index.faiss")
-    pickle.dump(chunks, open(f"{DB_PATH}/chunks.pkl", "wb"))
+    
+    # Save the ENTIRE data structure (chunks and metadata)
+    data_to_save = {"chunks": chunks, "metadata": metadata}
+    pickle.dump(data_to_save, open(f"{DB_PATH}/data.pkl", "wb"))
+
+
+# ---------- Agent Query Entry Point (for controller.py) ----------
 
 def handle_pdf_query(query: str):
-    """Performs RAG: Retrieves context and synthesizes an answer using the LLM."""
+    """Performs RAG: Retrieves context including full metadata, and synthesizes an answer."""
     
-    if not os.path.exists(f"{DB_PATH}/index.faiss"):
-        #Return dict for consistency with other agents
+    # Check for index and data file
+    if not os.path.exists(f"{DB_PATH}/index.faiss") or not os.path.exists(f"{DB_PATH}/data.pkl"):
         return {"summary": "No PDF ingested yet. Upload one first.", "raw_results": []} 
         
     index = faiss.read_index(f"{DB_PATH}/index.faiss")
-    chunks = pickle.load(open(f"{DB_PATH}/chunks.pkl", "rb"))
+    data_store = pickle.load(open(f"{DB_PATH}/data.pkl", "rb"))
+    all_chunks = data_store["chunks"]
+    all_metadata = data_store["metadata"] # <--- CRITICAL: Now we have metadata!
     
-    # USE EMBEDDING_MODEL to encode the query
+    # Encode the query
     query_emb = EMBEDDING_MODEL.encode([query]) 
     
-    # Retrieval step
+    # Retrieval step (k=5)
     D, I = index.search(query_emb, 5) 
-    results = [chunks[i] for i in I[0]] # The raw chunks retrieved
-    combined_context = " ".join(results)
+    
+    retrieved_chunks_with_meta = []
+    combined_context = ""
+
+    for chunk_index in I[0]:
+        chunk = all_chunks[chunk_index]
+        meta = all_metadata[chunk_index]
+        
+        # Format the context for the LLM to include the source citation
+        context_citation = f"[Source: {meta['source']}, Page: {meta['page_number']}]"
+        combined_context += f"{context_citation} {chunk}\n\n"
+        
+        # Store for the 'raw_results' return
+        retrieved_chunks_with_meta.append({
+            "text": chunk,
+            "source": meta['source'],
+            "page": meta['page_number']
+        })
 
     # --- LLM Synthesis Step ---
     prompt = f"""
-    Based ONLY on the following context retrieved from an uploaded PDF, provide a concise and factual answer to the question: "{query}"
+    You are an expert document summarizer. Your task is to provide a concise and factual answer to the question based ONLY on the context provided below.
+
+    **CRITICAL INSTRUCTION:** You MUST include the full citation immediately following the sentence or fact they support. The citation format is always: [Source: filename, Page: X]. Do not generate citations if they are not present in the context.
+
+    Question: "{query}"
 
     Context:
     ---
@@ -69,15 +167,20 @@ def handle_pdf_query(query: str):
     """
     
     try:
-        #USE SYNTHESIS_MODEL to generate the answer (Sync call for the controller)
         response = SYNTHESIS_MODEL.generate_content(prompt)
         summary = response.text.strip()
     except Exception as e:
-        #Fallback: return raw context with an error message
-        summary = combined_context[:1000] + f"\n\n(Gemini summarization failed: {e})"
+        summary = f"**Summarization failed:** {e}. Raw context returned:\n\n{combined_context}"
         
-    #Return summary and raw results as a dictionary
+    # Return summary and raw results (now with full metadata for logging)
+    # The controller expects a list of text strings or a list of dicts it can parse.
+    # We return the original text strings *with* the citation prepended for the logs.
+    final_raw_results = [
+        f"[Source: {d['source']}, Page: {d['page']}] {d['text']}" 
+        for d in retrieved_chunks_with_meta
+    ]
+
     return {
         "summary": summary,
-        "raw_results": results 
+        "raw_results": final_raw_results
     }

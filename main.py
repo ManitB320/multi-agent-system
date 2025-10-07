@@ -32,11 +32,10 @@ async def upload_pdf(file: UploadFile = File(...)):
     with open(file_path, "wb") as f:
         f.write(await file.read())
     
-    from agents.pdf_agent import process_pdf, embed_text, build_faiss_index
+    # Import the single, correct ingestion function
+    from agents.pdf_agent import ingest_pdf 
 
-    text = process_pdf(file_path)
-    chunks, emb = embed_text(text)
-    build_faiss_index(chunks, emb)
+    ingest_pdf(file_path)
 
     return {"filename": file.filename, "status": "PDF processed and indexed"}
     
