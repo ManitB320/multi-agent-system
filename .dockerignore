@@ -1,0 +1,16 @@
+# .dockerignore
+# Python Caches
+__pycache__/
+*.pyc
+*.pyo
+*~
+
+# Environment files
+.env
+.DS_Store
+
+# Large or generated directories that should not be in the image
+pdfs/
+pdf_store/
+logs/
+sample_pdfs/
