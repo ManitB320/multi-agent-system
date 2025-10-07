@@ -59,3 +59,21 @@ uvicorn main:app --reload
 3. Ask a Query: Enter a question in the "Ask me something..." box. The system will automatically route the query to the correct agent(s).
 
 4. Check Logs: The "Logs" section provides a detailed trace of the agent decision process.
+
+## ⚠️ Operational Note: Post-Upload Routing Behavior
+
+Users may observe that the queries following a successful PDF upload is often misrouted to the **PDF_RAG** agent, even if the question is general (e.g., "What is the capital of France?"). This agent will correctly respond with "not in pdf."
+
+**Solution:**
+
+To restore the dynamic LLM routing (i.e., routing to `Web_Search` or `Arxiv_Search`), simply **refresh the browser page** (`frontend/index.html`) and re-submit the query. The system will then correctly use the Controller Agent's logic for all subsequent queries.
+
+# Some Demo/Test Images:
+
+pdf_agent in action (Successful PDF upload and query related to the said PDF):
+
+![PDF-Agent System Demo Screenshot](assets/pdfdemo1.png)
+![PDF-Agent System Demo Screenshot](assets/pdfdemo2.png)
+
+
+### NOTE: This project was specifically built for Solar Industries India Ltd. Internship assessment.
