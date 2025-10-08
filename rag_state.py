@@ -1,16 +1,16 @@
-# rag_state.py (NEW FILE at project root)
 import os, pickle
 from dotenv import load_dotenv
 import google.generativeai as genai
-from sentence_transformers import SentenceTransformer
+# REMOVED: from sentence_transformers import SentenceTransformer 
 import faiss
+import numpy as np
 
 # Load environment variables once
 load_dotenv()
 
 # --- Global State Dictionary ---
 RAG_STATE = {
-    "embedding_model": None,
+    "embedding_model": None, # Now stores the genai Client
     "synthesis_model": None,
     "faiss_index": None,
     "data_store": None
@@ -22,17 +22,20 @@ def get_synthesis_model():
     """Initializes and returns the Gemini Synthesis Model only once."""
     if RAG_STATE["synthesis_model"] is None:
         print("--- RAG_STATE: Initializing Gemini Synthesis Model... ---")
+        # Ensure API key is configured before creating the model
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
         RAG_STATE["synthesis_model"] = genai.GenerativeModel("gemini-2.5-flash")
-        print("--- RAG_STATE: Gemini Model loaded. ---")
+        print("--- RAG_STATE: Gemini Synthesis Model loaded. ---")
     return RAG_STATE["synthesis_model"]
 
-def get_embedding_model():
-    """Initializes and returns the Sentence Transformer Model only once."""
+def get_embedding_client():
+    """Initializes and returns the configured genai client for API calls."""
     if RAG_STATE["embedding_model"] is None:
-        print("--- RAG_STATE: Initializing heavy SentenceTransformer model... ---")
-        RAG_STATE["embedding_model"] = SentenceTransformer('all-MiniLM-L6-v2')
-        print("--- RAG_STATE: Embedding Model loaded. ---")
+        print("--- RAG_STATE: Initializing lightweight Gemini Client for Embeddings... ---")
+        # The client itself is lightweight and manages the API calls
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        RAG_STATE["embedding_model"] = genai.Client()
+        print("--- RAG_STATE: Embedding Client loaded. ---")
     return RAG_STATE["embedding_model"]
 
 def load_faiss_index_data(db_path="pdf_store"):

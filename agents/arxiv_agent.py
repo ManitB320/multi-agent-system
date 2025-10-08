@@ -1,5 +1,3 @@
-# agents/arxiv_agent.py (UPDATED)
-
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
