@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libxml2-dev \
     libxslt1-dev \
-    zlib1g-dev \
+    zlib1g-dev \x
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
@@ -39,4 +39,4 @@ EXPOSE 8000
 
 # Command to run the application using uvicorn, reading the port from Render's environment
 # Use sh -c to execute the command inside a shell
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
