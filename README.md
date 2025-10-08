@@ -4,11 +4,27 @@ This project is a multi-agent orchestration framework built on **FastAPI** and t
 
 ## Features
 
-- **LLM-Powered Routing:** A Controller Agent (using Gemini) decides which specialized agents (`PDF_RAG`, `Web_Search`, `Arxiv_Search`) to activate based on the query's intent.
-- **Advanced PDF RAG:** Uses `PyMuPDF`, `sentence-transformers`, `langchain-text-splitters`, and `FAISS` for robust, chunked, and metadata-rich internal knowledge retrieval.
-- **Source Citation:** The PDF RAG agent is engineered to return answers with precise `[Source: filename, Page: X]` citations.
-- **Real-Time Logging:** Full query trace, agent decisions, and retrieved context chunks are logged to a `logs/trace.json` file and displayed on the frontend.
-- **Frontend Demo:** A simple HTML/CSS/JS interface to interact with the API endpoints.
+# Architecture Overview
+
+This project implements a **Multi-Agent Retrieval-Augmented Generation (RAG)** system designed for dynamic and source-agnostic querying. The system intelligently routes user requests to specialized agents to ensure contextually relevant and accurate responses.
+
+***
+
+![Multi-Agent-System Architecture Screenshot](assets/mag-architecture.png)
+
+## Key Components
+
+The application follows a clear architectural flow, with a central **Controller Agent** directing traffic to specialized RAG and search agents.
+
+| Component | Description | Technologies / Function |
+| :--- | :--- | :--- |
+| **Frontend** | A single-page application providing the user interface. | **Search Box**, **PDF Upload Widget**, and a unified **Response + Logs UI**. |
+| **FASTAPI Backend** | Serves as the central API gateway for all user and system interactions. | Endpoints: `/ask`, `/upload_pdf`, and `/logs`. |
+| **Controller Agent** | The core routing and reasoning engine, directing queries to the appropriate specialized agents. | Uses **Gemini LLM** for Routing decisions, reasoning logging, and final summarization of multiple results. |
+| **PDF RAG** | Handles queries against the user's uploaded, private knowledge base. | Uses **FAISS** for fast vector search and RAG for summarizing retrieved document chunks. |
+| **Web Search** | Provides access to current, external information. | Uses **DuckDuckGo** for searching, with **Gemini** processing and summarizing the search results. |
+| **Arxiv Agent** | Integrates with the Arxiv library to find and summarize technical papers. | Specialized retrieval and summarization for academic data. |
+| **Logging and Trace** | A centralized storage component that persists the full history of every query. | Stores a complete history of **Query -> Decisions -> Agents -> Output** in `logs/trace.json`. |
 
 ## Setup and Run
 
@@ -68,7 +84,7 @@ Users may observe that the queries following a successful PDF upload is often mi
 
 To restore the dynamic LLM routing (i.e., routing to `Web_Search` or `Arxiv_Search`), simply **refresh the browser page** (`frontend/index.html`) and re-submit the query. The system will then correctly use the Controller Agent's logic for all subsequent queries.
 
-# Some Demo/Test Images:
+## Some Demo/Test Images:
 
 PDF-Agent in Action (Successful PDF upload, query asked related to the PDF along with response & logs):
 
