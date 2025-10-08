@@ -6,7 +6,7 @@ import google.generativeai as genai
 from arxiv import Search, SortCriterion
 
 # --- New Import for Lazy Loading ---
-from ..rag_state import get_synthesis_model 
+from rag_state import get_synthesis_model 
 # --- End New Import ---
 
 # Load environment. DO NOT configure genai globally here.

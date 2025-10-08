@@ -6,9 +6,9 @@ import os, pickle
 import faiss
 # Remove the global imports for genai, SentenceTransformer, and the models
 
-# --- New Import for Lazy Loading ---
-# Since pdf_agent is in the 'agents' folder, we use '..rag_state' to reach the root file.
-from ..rag_state import get_embedding_model, get_synthesis_model, load_faiss_index_data
+# --- New Import for Lazy Loading (ABSOLUTE IMPORT) ---
+from rag_state import get_embedding_model, get_synthesis_model, load_faiss_index_data
+# --- End New Import ---
 
 # --- Advanced Chunking ---
 from langchain_text_splitters import RecursiveCharacterTextSplitter 

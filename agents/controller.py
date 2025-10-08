@@ -5,7 +5,7 @@ from agents import pdf_agent, web_agent, arxiv_agent
 import re
 
 # --- New Import for Lazy Loading ---
-from ..rag_state import get_synthesis_model 
+from rag_state import get_synthesis_model 
 # --- End New Import ---
 
 # Load environment. DO NOT configure genai globally here.
