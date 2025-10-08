@@ -2,9 +2,7 @@
 
 This project is a multi-agent orchestration framework built on **FastAPI** and the **Gemini API**. It features an intelligent **Controller Agent** that dynamically routes user queries to specialized agents, including a citation-aware PDF RAG system, a Web Search agent, and an Arxiv Search agent.
 
-## Features
-
-# Architecture Overview
+## Architecture Overview
 
 This project implements a **Multi-Agent Retrieval-Augmented Generation (RAG)** system designed for dynamic and source-agnostic querying. The system intelligently routes user requests to specialized agents to ensure contextually relevant and accurate responses.
 
