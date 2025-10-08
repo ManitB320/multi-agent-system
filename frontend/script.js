@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000";  // FastAPI backend
+const API_BASE = "";  // FastAPI backend
 
 // Send query to /ask endpoint
 async function sendQuery() {

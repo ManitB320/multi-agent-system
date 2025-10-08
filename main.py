@@ -4,6 +4,8 @@ import agents.controller as controller
 import uvicorn
 import json, os 
 from dotenv import load_dotenv
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import HTMLResponse
 
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
@@ -18,6 +20,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- START Frontend Static Files Configuration ---
+
+# 1. Mount the 'frontend' directory to serve CSS, JS, etc. 
+# The path must match your directory structure.
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
+
+# 2. Add an endpoint to serve the index.html at the root URL (/)
+@app.get("/", response_class=HTMLResponse)
+async def serve_frontend():
+    # Use the correct path to read your index.html file
+    with open("frontend/index.html", "r") as f:
+        return f.read()
+
+# --- END Frontend Static Files Configuration ---
 
 @app.post("/ask")
 async def ask(query: str):
