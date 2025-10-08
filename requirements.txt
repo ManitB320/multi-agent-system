@@ -21,3 +21,5 @@ arxiv #The Arxiv agent
 reportlab
 
 protobuf>=4.25.3
+
+python-multipart
