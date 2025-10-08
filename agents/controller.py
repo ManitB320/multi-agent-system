@@ -4,9 +4,12 @@ import google.generativeai as genai
 from agents import pdf_agent, web_agent, arxiv_agent
 import re
 
-# Load environment and configure Gemini
+# --- New Import for Lazy Loading ---
+from ..rag_state import get_synthesis_model 
+# --- End New Import ---
+
+# Load environment. DO NOT configure genai globally here.
 load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 MODEL_NAME = "gemini-2.5-flash"
 
 LOG_FILE = "logs/trace.json"
@@ -37,7 +40,8 @@ async def llm_decide(query: str):
     Returns dict with 'agents_used' and 'reason'.
     Falls back to rule-based if parsing fails.
     """
-    model = genai.GenerativeModel(MODEL_NAME)
+    # Use the LAZY-LOADED model
+    model = get_synthesis_model() 
 
     system_prompt = """
     You are a routing controller for a multi-agent AI system. 
@@ -59,8 +63,6 @@ async def llm_decide(query: str):
     - Combine agents if necessary.
     """
     try:
-        # Note: generate_content is synchronous by default, use generate_content_async if the sdk version supports it
-        # For simplicity and robustness, we use the synchronous version here since the function is already awaited in route_query.
         response = await model.generate_content_async([system_prompt, f"User query: {query}"])
         text = response.text.strip()
 
@@ -115,8 +117,8 @@ async def synthesize_answer(agent_outputs: list):
     {combined_text}
     """
     try:
-        model = genai.GenerativeModel(MODEL_NAME)
-        # FIX 1: MUST await the async API call
+        # Use the LAZY-LOADED model
+        model = get_synthesis_model() 
         response = await model.generate_content_async(prompt)
         return response.text.strip()
     except Exception as e:
@@ -180,7 +182,6 @@ async def route_query(query: str):
 
     # Synthesize if multiple agents used
     if len(agent_outputs) > 1:
-        # FIX 2: MUST await the async synthesize_answer function
         final_answer = await synthesize_answer(agent_outputs)
     else:
         final_answer = agent_outputs[0]["content"] if agent_outputs else "(No response)"

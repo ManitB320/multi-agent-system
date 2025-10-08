@@ -1,26 +1,19 @@
+# agents/pdf_agent.py (UPDATED)
+
 import fitz # PyMuPDF
 import numpy as np
 import os, pickle
-from dotenv import load_dotenv
-import google.generativeai as genai
+import faiss
+# Remove the global imports for genai, SentenceTransformer, and the models
 
-# --- New Import for Advanced Chunking ---
+# --- New Import for Lazy Loading ---
+# Since pdf_agent is in the 'agents' folder, we use '..rag_state' to reach the root file.
+from ..rag_state import get_embedding_model, get_synthesis_model, load_faiss_index_data
+
+# --- Advanced Chunking ---
 from langchain_text_splitters import RecursiveCharacterTextSplitter 
 
-# --- Configuration & Models ---
-load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
-# LLM Generative Model (For synthesis)
-MODEL_NAME = "gemini-2.5-flash"
-SYNTHESIS_MODEL = genai.GenerativeModel(MODEL_NAME) 
-
-# Embedding Model (For retrieval)
-from sentence_transformers import SentenceTransformer
-EMBEDDING_MODEL = SentenceTransformer('all-MiniLM-L6-v2') 
-
 # Vector Store/DB parameters
-import faiss
 DB_PATH = "pdf_store"
 
 # --- RAG/Chunking Parameters ---
@@ -51,9 +44,10 @@ def ingest_pdf(file_path: str):
     chunks = [d["text"] for d in chunk_data_list]
     metadata = [d["metadata"] for d in chunk_data_list]
 
-    # 3. Generate Embeddings
+    # 3. Generate Embeddings (USES LAZY-LOADED MODEL)
     print(f"Generating embeddings for {len(chunks)} chunks...")
-    embeddings = EMBEDDING_MODEL.encode(chunks)
+    embedding_model = get_embedding_model() # <--- LAZY LOAD CALL
+    embeddings = embedding_model.encode(chunks)
     
     # 4. Build and Save FAISS Index and Data
     _build_and_save_index(chunks, metadata, embeddings)
@@ -62,6 +56,7 @@ def ingest_pdf(file_path: str):
 
 def _process_pdf_and_chunk(file_path: str):
     """Internal function to handle PDF parsing and advanced chunking with metadata."""
+    # ... (content remains the same) ...
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP,
@@ -119,17 +114,18 @@ def _build_and_save_index(chunks: list, metadata: list, embeddings: np.ndarray):
 def handle_pdf_query(query: str):
     """Performs RAG: Retrieves context including full metadata, and synthesizes an answer."""
     
-    # Check for index and data file
-    if not os.path.exists(f"{DB_PATH}/index.faiss") or not os.path.exists(f"{DB_PATH}/data.pkl"):
+    # Use the lazy loader to get the index and data (which handles the os.path.exists checks internally)
+    index, data_store = load_faiss_index_data(DB_PATH) # <--- LAZY LOAD CALL
+    
+    if index is None or data_store is None:
         return {"summary": "No PDF ingested yet. Upload one first.", "raw_results": []} 
         
-    index = faiss.read_index(f"{DB_PATH}/index.faiss")
-    data_store = pickle.load(open(f"{DB_PATH}/data.pkl", "rb"))
     all_chunks = data_store["chunks"]
-    all_metadata = data_store["metadata"] # <--- CRITICAL: Now we have metadata!
+    all_metadata = data_store["metadata"] 
     
-    # Encode the query
-    query_emb = EMBEDDING_MODEL.encode([query]) 
+    # Encode the query (USES LAZY-LOADED MODEL)
+    embedding_model = get_embedding_model() # <--- LAZY LOAD CALL
+    query_emb = embedding_model.encode([query]) 
     
     # Retrieval step (k=5)
     D, I = index.search(query_emb, 5) 
@@ -152,7 +148,7 @@ def handle_pdf_query(query: str):
             "page": meta['page_number']
         })
 
-    # --- LLM Synthesis Step ---
+    # --- LLM Synthesis Step (USES LAZY-LOADED MODEL) ---
     prompt = f"""
     You are an expert document summarizer. Your task is to provide a concise and factual answer to the question based ONLY on the context provided below.
 
@@ -167,14 +163,12 @@ def handle_pdf_query(query: str):
     """
     
     try:
-        response = SYNTHESIS_MODEL.generate_content(prompt)
+        synthesis_model = get_synthesis_model() # <--- LAZY LOAD CALL
+        response = synthesis_model.generate_content(prompt)
         summary = response.text.strip()
     except Exception as e:
         summary = f"**Summarization failed:** {e}. Raw context returned:\n\n{combined_context}"
         
-    # Return summary and raw results (now with full metadata for logging)
-    # The controller expects a list of text strings or a list of dicts it can parse.
-    # We return the original text strings *with* the citation prepended for the logs.
     final_raw_results = [
         f"[Source: {d['source']}, Page: {d['page']}] {d['text']}" 
         for d in retrieved_chunks_with_meta

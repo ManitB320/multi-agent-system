@@ -1,15 +1,22 @@
+# agents/web_agent.py (UPDATED)
+
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 from duckduckgo_search import DDGS
 
-# Load environment and configure Gemini
+# --- New Import for Lazy Loading ---
+from ..rag_state import get_synthesis_model 
+# --- End New Import ---
+
+# Load environment. DO NOT configure genai globally here.
 load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel("gemini-2.5-flash") 
 
 def handle_web_query(query):
     """Fetch top web results and summarize them using Gemini."""
+
+    # Use the lazy loader for the model
+    model = get_synthesis_model() # <--- LAZY LOAD CALL
 
     results = []
     try:
