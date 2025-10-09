@@ -78,7 +78,7 @@ uvicorn main:app --reload
 
 ###  How to Use
 
-1. Open the Frontend: Navigate to frontend/index.html in your web browser.
+1. Open the Frontend: Open your localhost i.e. http://127.0.0.1:8000 in your web browser.
 
 2. Ingest PDFs: Before querying, use the "Upload PDF" button to ingest the sample documents (or your own pdf that includes text) from the sample_pdfs/ folder. This builds the internal FAISS vector store.
 
