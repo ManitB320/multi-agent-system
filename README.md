@@ -4,7 +4,7 @@ This project is a multi-agent orchestration framework built on **FastAPI** and t
 
 Render Link: https://multi-agent-rag-system-1r2n.onrender.com/
 
-⚠️ Important Note on Service Limitations (Demo Version)
+⚠️ Important Note on Service Limitations for the Cloud Version
 
 The currently rendered version of this application is running on a free-tier hosting service. Due to RAM and resource constraints, heavier tasks may fail or time out.
 
