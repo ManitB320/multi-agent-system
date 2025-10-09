@@ -4,7 +4,15 @@ This project is a multi-agent orchestration framework built on **FastAPI** and t
 
 Render Link: https://multi-agent-rag-system-1r2n.onrender.com/
 
-⚠️NOTE: I highly recommend running the local version to see the systems full capability as the render version is being run on its free tier service. Due to this there are RAM limitations when performing heavier tasks like uploading a pdf for our RAG or performing a web search. This means anything pertaining to pdf_agent and web_agent will not work most of the time. The arxiv agent isn't as heavy so you may use it freely. Example question: "Summarize recent research done in astrophysics in 5 points."
+⚠️ Important Note on Service Limitations (Demo Version)
+
+The currently rendered version of this application is running on a free-tier hosting service. Due to RAM and resource constraints, heavier tasks may fail or time out.
+
+   - Agents Affected: The pdf_agent and web_agent functionality will be unreliable or non-functional most of the time.
+
+   - Recommended Agent: The arxiv_agent is less resource-intensive and can generally be used without issue.
+
+   - Recommendation: To experience the system's full capability with all agents, including web searches and document processing, please run the application locally by following the setup instructions below.
 
 ## Architecture Overview
 
