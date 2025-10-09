@@ -14,16 +14,17 @@ def handle_web_query(query):
     """Fetch top web results and summarize them using Gemini."""
 
     # Use the lazy loader for the model
-    model = get_synthesis_model() # <--- LAZY LOAD CALL
+    model = get_synthesis_model()
 
     results = []
     try:
         # Use DDGS context manager for web search
         with DDGS() as ddgs:
-            # We explicitly convert the generator to a list here to ensure we have all results
+            # TWEAK 1: Increase max_results for higher relevance coverage
             results = list(ddgs.text(
-                f"{query}",
-                max_results=5,
+                query,          # Use the exact query for general search
+                region = "wt-wt",
+                max_results=10,       # Increased from 5 to 10
                 safesearch="moderate"
             ))
     except Exception as e:
@@ -32,19 +33,27 @@ def handle_web_query(query):
     if not results:
         return {"summary": "No relevant web results found.", "raw_results": []}
 
-    # Prepare context for the LLM (using the 'body' snippet)
-    combined = "\n\n---\n\n".join([r.get("body", "") for r in results[:5]])
+    # TWEAK 2: Standardize and improve context structure
+    combined_snippets = []
+    for i, r in enumerate(results):
+        title = r.get("title", f"Document {i+1} (Title Missing)")
+        url = r.get("href", "URL Missing")
+        # Use 'body' (common in DDGS) or fallback to 'description'
+        snippet_text = r.get("body", r.get("description", "Snippet not available.")) 
+        
+        # Structure the context clearly for the LLM
+        combined_snippets.append(f"--- DOCUMENT {i+1} ---\nTITLE: {title}\nURL: {url}\nSNIPPET: {snippet_text}")
 
-    # Gemini summarization prompt
+    combined = "\n\n".join(combined_snippets)
+
+    # TWEAK 3: Simplify and focus the summarization prompt
     summary_prompt = f"""
-    You are a factual summarization assistant. Summarize the following search result snippets into a concise English answer for the user query: "{query}"
+    Based ONLY on the provided documents, summarize the answer to the user query: "{query}"
 
-    Focus on the most recent and relevant facts only, and use the snippets provided.
+    Synthesize the information from the documents into a factual, concise, and coherent English response.
 
-    Web snippets:
-    ---
+    Documents:
     {combined}
-    ---
     """
 
     try:
@@ -53,10 +62,10 @@ def handle_web_query(query):
         summary = response.text.strip()
     except Exception as e:
         # Fallback summary with error
-        summary = combined[:1000] + f"\n\n(Gemini summarization failed: {e})"
+        summary = combined[:1500] + f"\n\n(Gemini summarization failed: {e})"
 
     # Return structured dictionary
     return {
-        "raw_results": results[:5],
+        "raw_results": results,
         "summary": summary
     }
