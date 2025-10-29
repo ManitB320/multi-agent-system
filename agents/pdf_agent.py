@@ -54,7 +54,7 @@ def ingest_pdf(file_path: str):
 
 def _process_pdf_and_chunk(file_path: str):
     """Internal function to handle PDF parsing and advanced chunking with metadata."""
-    # ... (content remains the same) ...
+
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP,

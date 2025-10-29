@@ -10,7 +10,7 @@ google-generativeai==0.7.2
 PyMuPDF==1.24.5  # (fitz is PyMuPDF)
 numpy
 faiss-cpu # Lightweight CPU version for vector store
-#sentence-transformers
+sentence-transformers
 langchain-text-splitters # Used for RecursiveCharacterTextSplitter
 duckduckgo-search # Needed for web_agent.py
 
